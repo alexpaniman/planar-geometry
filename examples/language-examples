@@ -1,0 +1,15 @@
+# Задача 5.1 [planim5]
+def triangle (A B C)
+def point (A_1) on (B C)
+def point (B_1) on (A C)
+def point (C_1) on (A B)
+equals (A C_1) (A B_1)
+equals (B A_1) (B C_1)
+equals (C A_1) (C B_1)
+def circle (omega) around (A_1 B_1 C_1)
+
+# Задача 5.3 [planim5]
+triangle (A B C)
+circle (omega) inscribed (A B C)
+
+# Нужны полуплоскости?
