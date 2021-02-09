@@ -1,9 +1,11 @@
 package objects
 
-import illustration.Illustration
+import objects.point.MovablePoint
+import kotlin.random.Random
 
-abstract class PlanarObject {
-    abstract val isDefined: Boolean
+interface PlanarObject {
+    fun define(): XYPlanarObject
+    fun corePoints(): List<MovablePoint>
 
-    abstract fun define(illustration: Illustration): XYPlanarObject
+    fun setup(random: Random) {}
 }

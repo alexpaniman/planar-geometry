@@ -1,3 +1,3 @@
 package lexer
 
-data class Token(val token: TokenType, val symbol: String? = null)
+data class Token(val type: TokenType, val symbol: String? = null)

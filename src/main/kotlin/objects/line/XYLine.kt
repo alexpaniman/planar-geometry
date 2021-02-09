@@ -2,6 +2,14 @@ package objects.line
 
 import objects.XYPlanarObject
 import objects.point.XYPoint
+import tikz.TikZ
 
-data class XYLine(val p1: XYPoint, val p2: XYPoint) : XYPlanarObject()
+class XYLine(private val from: XYPoint, private val to: XYPoint) : XYPlanarObject {
+    override fun draw(tikz: TikZ) {
+        from.draw(tikz)
+        to.draw(tikz)
+
+        tikz.drawLine(from, to)
+    }
+}
 

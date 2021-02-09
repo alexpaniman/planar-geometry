@@ -1,5 +1,7 @@
 package objects
 
-abstract class XYPlanarObject {
-    abstract fun drawTikZ(): String
+import tikz.TikZ
+
+interface XYPlanarObject {
+    fun draw(tikz: TikZ)
 }

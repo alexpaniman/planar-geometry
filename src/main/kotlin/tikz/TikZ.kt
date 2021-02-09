@@ -1,6 +1,7 @@
 package tikz
 
 import objects.point.XYPoint
+import tikz.objects.TikZCircle
 import tikz.objects.TikZLine
 import tikz.objects.TikZNode
 
@@ -17,8 +18,17 @@ class TikZ {
     }
 
     fun drawPoint(point: XYPoint) {
-        objects.add(
-            TikZNode(('A'..'Z').random().toString(), point) // TODO Randomness
-        )
+        val tikzNode = TikZNode(
+            ('A'..'Z')
+                .random()
+                .toString(),
+            point
+        ) // TODO Randomness, name stack
+
+        objects.add(tikzNode)
+    }
+
+    fun drawCircle(center: XYPoint, radius: Double) {
+        objects.add(TikZCircle(center, radius))
     }
 }

@@ -12,9 +12,13 @@ private fun wrapInLaTeX(tikz: String) = """
         \end{document}
     """.trimIndent()
 
-private fun compileTeX(program: String): File {
-    val tempFile = File.createTempFile("tikzpicture", ".tex")
-    val targetFile = File("${tempFile.absolutePath.removeSuffix(".tex")}.pdf")
+private fun compileTeX(program: String, fileTeX: File? = null): File {
+    val tempFile = fileTeX ?: File
+        .createTempFile("tikzpicture", ".tex")
+
+    val targetFile = File("${tempFile
+        .absolutePath
+        .removeSuffix(".tex")}.pdf")
 
     tempFile.writeText(program)
 
@@ -25,7 +29,8 @@ private fun compileTeX(program: String): File {
     return targetFile
 }
 
-fun compileTikZ(tikz: String): File {
+fun compileTikZ(tikz: String, name: String): File {
     val program = wrapInLaTeX(tikz)
-    return compileTeX(program)
+    val file = File("/tmp/$name.tex")
+    return compileTeX(program, file)
 }
