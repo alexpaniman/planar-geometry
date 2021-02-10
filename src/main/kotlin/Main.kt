@@ -1,6 +1,10 @@
 import latex.compileTikZ
 import lexer.Lexer
+import objects.circle.Circle
+import objects.circle.XYCircle
 import objects.illustration.Illustration
+import objects.point.AnyPoint
+import objects.point.XYPoint
 import parser.Parser
 import tikz.TikZ
 import java.io.File
@@ -23,18 +27,20 @@ fun main() {
     val illustration = Illustration()
         .also { it.objects.addAll(objects) }
 
-    for (i in 2..10) {
-        val random = Random(i * 1010101010L)
+    var seed = System.currentTimeMillis()
+    println("Seed: $seed")
 
-        illustration.setup(random)
-        val image = illustration.define()
+    // seed = 1612969559065
 
-        val tikz = TikZ()
-            .also { image.draw(it) }
-            .tikzify()
+    val random = Random(seed)
 
-        compileTikZ(tikz, "my-test-tikzpicture")
-        sleep(1000)
-    }
+    illustration.setup(random, XYCircle(XYPoint("NONE", 0.0, 0.0), 100.0))
+    val image = illustration.define()
+
+    val tikz = TikZ()
+        .also { image.draw(it) }
+        .tikzify()
+
+    compileTikZ(tikz, "my-test-tikzpicture")
     // openInZathura(output)
 }

@@ -1,6 +1,8 @@
 package objects.polygon
 
 import objects.PlanarObject
+import objects.circle.Circle
+import objects.circle.XYCircle
 import objects.point.Point
 import objects.point.PointIn
 import objects.point.PointOn
@@ -15,8 +17,10 @@ abstract class Polygon : PlanarObject, PointIn, PointOn {
     override fun addPointIn(point: Point) { pointsIn.add(point) }
     override fun addPointOn(point: Point) { pointsOn.add(point) }
 
-    override fun setup(random: Random) {
+    override fun setup(random: Random, circle: XYCircle) {
+        // Set right points?
+
         // TODO Place points in triangle
-        val triangleXY = define()
+        // val triangleXY = define()
     }
 }

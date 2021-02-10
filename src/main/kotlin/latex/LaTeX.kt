@@ -3,7 +3,7 @@ package latex
 import java.io.File
 
 private fun wrapInLaTeX(tikz: String) = """
-        \documentclass[crop, tikz]{standalone}
+        \documentclass[crop, tikz, margin={20pt 40pt 20pt 20pt}]{standalone}
         
         \begin{document}
         \begin{tikzpicture}

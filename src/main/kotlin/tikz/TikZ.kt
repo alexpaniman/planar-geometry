@@ -18,12 +18,7 @@ class TikZ {
     }
 
     fun drawPoint(point: XYPoint) {
-        val tikzNode = TikZNode(
-            ('A'..'Z')
-                .random()
-                .toString(),
-            point
-        ) // TODO Randomness, name stack
+        val tikzNode = TikZNode(point.name, point)
 
         objects.add(tikzNode)
     }
