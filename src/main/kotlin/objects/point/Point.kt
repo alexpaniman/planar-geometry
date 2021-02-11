@@ -2,6 +2,6 @@ package objects.point
 
 import objects.PlanarObject
 
-abstract class Point(val name: String): PlanarObject {
+abstract class Point: PlanarObject<XYPoint>() {
     abstract override fun define(): XYPoint
 }

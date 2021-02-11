@@ -3,6 +3,7 @@ import lexer.Lexer
 import objects.circle.Circle
 import objects.circle.XYCircle
 import objects.illustration.Illustration
+import objects.illustration.style.IllustrationStyle
 import objects.point.AnyPoint
 import objects.point.XYPoint
 import parser.Parser
@@ -25,22 +26,27 @@ fun main() {
         .parse(tokens)
 
     val illustration = Illustration()
-        .also { it.objects.addAll(objects) }
+        .also {
+            it.objects.addAll(objects)
+            it.applyStyle(IllustrationStyle)
+        }
 
-    var seed = System.currentTimeMillis()
-    println("Seed: $seed")
+    val seed = /* System.currentTimeMillis() */ 1613080623291
+    println("Seed: $seed\n")
 
     // seed = 1612969559065
 
     val random = Random(seed)
 
-    illustration.setup(random, XYCircle(XYPoint("NONE", 0.0, 0.0), 100.0))
-    val image = illustration.define()
+    val circle = XYCircle(XYPoint(0.0, 0.0), 100.0)
+    illustration.setup(random, circle)
 
-    val tikz = TikZ()
-        .also { image.draw(it) }
-        .tikzify()
+    val canvasTikZ = TikZ()
+    illustration.draw(canvasTikZ)
 
-    compileTikZ(tikz, "my-test-tikzpicture")
+    val tikzCode = canvasTikZ.tikzify()
+    println(tikzCode)
+
+    compileTikZ(tikzCode, "my-test-tikzpicture")
     // openInZathura(output)
 }

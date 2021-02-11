@@ -3,7 +3,7 @@ package objects.circle
 import objects.PlanarObject
 import objects.point.Point
 
-class Circle(private val center: Point, private val side: Point): PlanarObject { // TODO PointIn, PointOn, make it abstract
+class Circle(private val center: Point, private val side: Point): PlanarObject<XYCircle>() { // TODO PointIn, PointOn, make it abstract
     override fun define(): XYCircle {
         val centerXY = center.define()
 

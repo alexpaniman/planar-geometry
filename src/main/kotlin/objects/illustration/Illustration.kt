@@ -1,10 +1,7 @@
 package objects.illustration
 
 import objects.PlanarObject
-import objects.XYPlanarObject
-import objects.circle.Circle
 import objects.circle.XYCircle
-import objects.point.AnyPoint
 import objects.point.XYPoint
 import util.random
 import kotlin.math.PI
@@ -12,7 +9,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class Illustration : PlanarObject {
+class Illustration : PlanarObject<XYIllustration>() {
     companion object {
         @JvmStatic
         val BEST_LENGTH = 1.0..5.0
@@ -21,33 +18,42 @@ class Illustration : PlanarObject {
         val BEST_RATIO = 1.0..1.5
     }
 
-    val objects: MutableList<PlanarObject> = mutableListOf()
+    val objects: MutableList<PlanarObject<*>> = mutableListOf()
 
     override fun corePoints() = objects
         .map { it.corePoints() }
         .flatten()
         .distinct()
 
-    override fun define(): XYPlanarObject {
+    override fun define(): XYIllustration { // TODO It's useless!
         val definedObjects = objects
             .map { it.define() }
-            .toTypedArray()
 
-        return XYIllustration(*definedObjects)
+        return XYIllustration(definedObjects)
     }
 
+    private val firstRadius = .01
+    private val growFactor  = .01
+
     override fun setup(random: Random, circle: XYCircle) {
-        val areas = (0..objects.size).map {
+        fun randomizePoint(pointXY: XYPoint) {
             val radius = BEST_LENGTH.random(random)
             val rotate = (0.0..2 * PI)
                 .random(random)
 
-            XYPoint(
-                "object-point-[$it]",
+            pointXY.moveTo(
                 radius * cos(rotate),
                 radius * sin(rotate)
             )
-        }.map { XYCircle(it, 0.01) } // TODO Adjustable
+        }
+
+        val areas = (1..objects.size)
+            .map {
+                val center = XYPoint()
+                randomizePoint(center)
+
+                XYCircle(center, firstRadius)
+            }
 
         while(true) {
             val maxRadius = areas.maxOf { it.radius }
@@ -63,18 +69,12 @@ class Illustration : PlanarObject {
                     }.any { it }
 
                 if (!touching)
-                    area.radius += 0.01 // TODO Adjustable
+                    area.radius += growFactor
                 else if (maxRadius / area.radius !in BEST_RATIO) {
-                    areas.forEach { it.radius = 0.01 } // TODO Adjustable
+                    for (current in areas)
+                        current.radius = firstRadius
 
-                    val radius = BEST_LENGTH.random(random)
-                    val rotate = (0.0..2 * PI)
-                        .random(random)
-
-                    area.center.moveTo(
-                        radius * cos(rotate),
-                        radius * sin(rotate)
-                    )
+                    randomizePoint(area.center)
                 }
 
                 touching
@@ -84,79 +84,26 @@ class Illustration : PlanarObject {
                 break
         }
 
-
-//        for (steady in objectPoints) {
-//            val closest = objectPoints
-//                .filter { it != steady }
-//                .minByOrNull {
-//                    it.distanceTo(steady)
-//                } ?: error("Not enough points!")
-//
-//            if (closest.distanceTo(steady) > BEST_LENGTH.endInclusive) {
-//                val distanceNew = BEST_LENGTH
-//                    .random(random)
-//
-//                closest.moveAlongLine(steady, distanceNew)
-//            }
-//
-//            for (moving in objectPoints) {
-//                if (moving == steady)
-//                    continue
-//
-//                if (moving.distanceTo(steady) < 2 * BEST_LENGTH.start) {
-//                    val distanceNew = BEST_LENGTH
-//                        .random(random)
-//
-//                    moving.moveAlongLine(steady, distanceNew)
-//                }
-//            }
-//        }
-//
-//        val circles = objectPoints.map {
-//            XYCircle(it,0.1) // TODO Adjustable default radius
-//        }
-//
-//        var grew: Boolean; do {
-//            grew = false
-//            for (current in circles) {
-//                val colliding = circles
-//                    .filter { it != current }
-//                    .map {
-//                        val distance = it.center.distanceTo(current.center)
-//                        distance <= current.radius + it.radius
-//                    }.any { it }
-//
-//                if (!colliding) {
-//                    current.radius += 0.01 // TODO Adjustable
-//                    grew = true
-//                }
-//            }
-//        } while (grew)
-//
-//        for (current in circles)
-//            current.radius *= 0.95 // TODO Adjustable
-//
-//        for ((obj, current) in objects.zip(circles))
-//            obj.setup(random, current)
+        for ((obj, area) in objects.zip(areas))
+            obj.setup(random, area)
 
         // TODO This block is just for testing
-        objects.clear()
-        for (current in areas) {
-            val actualCenter = AnyPoint(('A'..'Z').random().toString())
-                .also { it.pointXY.moveTo(current.center.x, current.center.y) }
-
-            val sidePoint = AnyPoint(('A'..'Z').random().toString())
-                .also {
-                    val rotate = (0.0..2 * PI).random(random)
-
-                    it.pointXY.moveTo(
-                        current.radius * cos(rotate) + current.center.x,
-                        current.radius * sin(rotate) + current.center.y
-                    )
-                }
-
-            Circle(actualCenter, sidePoint)
-                .also { objects.add(it) }
-        }
+//        for (current in areas) {
+//            val actualCenter = AnyPoint(('A'..'Z').random().toString())
+//                .also { it.pointXY.moveTo(current.center.x, current.center.y) }
+//
+//            val sidePoint = AnyPoint(('A'..'Z').random().toString())
+//                .also {
+//                    val rotate = (0.0..2 * PI).random(random)
+//
+//                    it.pointXY.moveTo(
+//                        current.radius * cos(rotate) + current.center.x,
+//                        current.radius * sin(rotate) + current.center.y
+//                    )
+//                }
+//
+//            Circle(actualCenter, sidePoint)
+//                .also { objects.add(it) }
+//        }
     }
 }

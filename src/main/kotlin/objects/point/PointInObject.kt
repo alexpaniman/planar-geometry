@@ -1,7 +1,7 @@
 package objects.point
 
-class PointInObject(name: String, private val obj: PointIn): MovablePoint(name) {
-    init { obj.addPointIn(this) }
+import objects.PlanarObject
 
-    override fun corePoints() = obj.corePoints()
+class PointInObject<XY>(private val parent: PlanarObject<XY>): MovablePoint() {
+    override fun corePoints() = parent.corePoints()
 }
