@@ -1,8 +1,6 @@
 package objects.polygon.style
 
-import objects.Style
-import objects.line.Segment
-import objects.line.style.SegmentStyle
+import objects.style.Style
 import objects.polygon.PointsPolygon
 import tikz.TikZ
 
@@ -12,9 +10,16 @@ object PointsPolygonStyle : Style<PointsPolygon> {
 
         var previous = definedPoints.last()
         for (current in definedPoints) {
-            Segment(previous, current)
-                .also { it.applyStyle(SegmentStyle) }
-                .draw(tikz)
+            val segment = PointsPolygon(listOf(previous, current))
+
+            val definedPrevious = previous.define()
+            val definedCurrent = current.define()
+
+            tikz.draw(segment, """
+                \draw (${definedPrevious.x}, ${definedPrevious.y}) --
+                      (${definedCurrent.x}, ${definedCurrent.y});""".trimIndent())
+
+            current.draw(tikz)
 
             previous = current
         }

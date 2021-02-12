@@ -1,6 +1,6 @@
 package objects.point.style
 
-import objects.Style
+import objects.style.Style
 import objects.point.Point
 import tikz.TikZ
 

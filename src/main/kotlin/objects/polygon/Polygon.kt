@@ -18,8 +18,6 @@ abstract class Polygon: PlanarObject<XYPolygon>(), PointIn, PointOn {
     override fun addPointOn(point: MovablePoint) { pointsOn.add(point) }
 
     override fun setup(random: Random, circle: XYCircle) {
-        // Set right points?
-
         // TODO Place points in triangle
         // val triangleXY = define()
     }

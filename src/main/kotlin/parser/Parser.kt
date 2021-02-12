@@ -5,9 +5,11 @@ import lexer.TokenType.*
 import objects.PlanarObject
 import objects.circle.Circle
 import objects.circle.style.CircleStyle
-import objects.line.Segment
-import objects.line.style.SegmentStyle
+import objects.line.Line
+import objects.line.style.LineStyle
 import objects.point.AnyPoint
+import objects.point.Point
+import objects.point.style.LabeledPointLineStyle
 import objects.point.style.LabeledPointPolygonStyle
 import objects.point.style.LabeledPointRotatedStyle
 import objects.point.style.PointStyle
@@ -16,14 +18,19 @@ import objects.polygon.style.PointsPolygonStyle
 import kotlin.math.PI
 
 class Parser {
-    private fun randomPoints(vararg names: String) = names
-        .map { AnyPoint().applyStyle(PointStyle) }
+    private val pointsMap: MutableMap<String, Point> = mutableMapOf()
+    private fun initializePoints(vararg names: String) = names
+        .map {
+            pointsMap.computeIfAbsent(it) {
+                AnyPoint().applyStyle(PointStyle)
+            }
+        }
 
     private fun instantiateObject(id: String, vararg names: String): PlanarObject<*> {
-        val points = randomPoints(*names)
+        val points = initializePoints(*names)
 
         return when (id) {
-            "triangle" -> {
+            "triangle", "segment", "polygon" -> {
                 val polygon = PointsPolygon(points)
                     .applyStyle(PointsPolygonStyle)
 
@@ -35,12 +42,21 @@ class Parser {
                 polygon
             }
 
-            "line" -> Segment(points[0], points[1])
-                .applyStyle(SegmentStyle)
+            "line" -> {
+                val line = Line(points[0], points[1])
+                    .applyStyle(LineStyle)
 
-            "point" -> {
+                points.zip(names).forEach { (point, name) ->
+                    val style = LabeledPointLineStyle(name, line)
+                    point.applyStyle(style)
+                }
+
+                line
+            }
+
+            "point" ->{
                 val style = LabeledPointRotatedStyle(names.first(), - PI / 3)
-                AnyPoint().applyStyle(style)
+                points[0].applyStyle(style)
             }
 
             "circle" -> Circle(points[0], points[1])

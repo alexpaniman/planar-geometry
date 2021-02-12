@@ -1,6 +1,6 @@
 package objects.point.style
 
-import objects.Style
+import objects.style.Style
 import objects.label.XYLabel
 import objects.point.Point
 import objects.point.XYPoint

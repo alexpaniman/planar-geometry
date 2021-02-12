@@ -2,6 +2,7 @@ package objects
 
 import objects.circle.XYCircle
 import objects.point.MovablePoint
+import objects.style.Style
 import tikz.TikZ
 import kotlin.random.Random
 

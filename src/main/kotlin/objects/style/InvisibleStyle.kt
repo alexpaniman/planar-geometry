@@ -1,4 +1,4 @@
-package objects
+package objects.style
 
 import tikz.TikZ
 

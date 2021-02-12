@@ -1,6 +1,6 @@
 package objects.illustration.style
 
-import objects.Style
+import objects.style.Style
 import objects.illustration.Illustration
 import tikz.TikZ
 

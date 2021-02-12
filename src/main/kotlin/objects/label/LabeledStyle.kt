@@ -1,6 +1,6 @@
 package objects.label
 
-import objects.Style
+import objects.style.Style
 import tikz.TikZ
 
 class LabeledStyle<XY>(private val label: XYLabel, private val objectStyle: Style<XY>): Style<XY> {

@@ -55,7 +55,7 @@ class Illustration : PlanarObject<XYIllustration>() {
                 XYCircle(center, firstRadius)
             }
 
-        while(true) {
+        if (areas.size > 1) while (true) {
             val maxRadius = areas.maxOf { it.radius }
 
             val finished = areas.map { area ->
@@ -82,6 +82,11 @@ class Illustration : PlanarObject<XYIllustration>() {
 
             if (finished)
                 break
+        }
+
+        if (areas.size == 1) {
+            areas[0].center.moveTo(0.0, 0.0)
+            areas[0].radius = BEST_LENGTH.random(random)
         }
 
         for ((obj, area) in objects.zip(areas))

@@ -1,6 +1,6 @@
 package objects.circle.style
 
-import objects.Style
+import objects.style.Style
 import objects.circle.Circle
 import tikz.TikZ
 
@@ -10,6 +10,6 @@ object CircleStyle: Style<Circle> {
         val center = definedCircle.center
         val radius = definedCircle.radius
 
-        tikz.draw(obj, "\\draw (${center.x}, ${center.y}) [radius = $radius];")
+        tikz.draw(obj, "\\draw (${center.x}, ${center.y}) circle [radius = $radius];")
     }
 }

@@ -31,10 +31,8 @@ fun main() {
             it.applyStyle(IllustrationStyle)
         }
 
-    val seed = /* System.currentTimeMillis() */ 1613080623291
+    val seed = System.currentTimeMillis()
     println("Seed: $seed\n")
-
-    // seed = 1612969559065
 
     val random = Random(seed)
 

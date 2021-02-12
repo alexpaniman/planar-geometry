@@ -19,8 +19,8 @@ class PointsPolygon(val points: List<Point>): PlanarObject<XYPolygon>() {
     override fun setup(random: Random, circle: XYCircle) {
         val part = 2.0 * PI / points.size
         for ((index, point) in points.withIndex()) {
-            val rotate = (index * part..(index + 1) * part).random(random)
-            val radius = (circle.radius * 0.7..circle.radius) // TODO Adjustable
+            val rotate = ((index + 0.15) * part..(index + 1 - 0.15) * part).random(random)
+            val radius = (circle.radius * 0.6..0.9 * circle.radius) // TODO Adjustable
                 .random(random)
 
             val center = circle.center
