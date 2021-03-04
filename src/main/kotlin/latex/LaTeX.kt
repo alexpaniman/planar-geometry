@@ -3,14 +3,13 @@ package latex
 import java.io.File
 
 private fun wrapInLaTeX(tikz: String) = """
-        \documentclass[crop, tikz, margin={20pt 40pt 20pt 20pt}]{standalone}
+        | \documentclass[crop, tikz, margin={20pt 40pt 20pt 20pt}]{standalone}
         
-        \begin{document}
-        \begin{tikzpicture}
-        ${tikz.lines().joinToString("\n") { "\t$it" }}
-        \end{tikzpicture}
-        \end{document}
-    """.trimIndent()
+        | \begin{document}
+        |   \begin{tikzpicture}
+        | ${tikz.lines().joinToString("\n") { "    $it" }}
+        |   \end{tikzpicture}
+        | \end{document}""".trimMargin("| ")
 
 private fun compileTeX(program: String, fileTeX: File? = null): File {
     val tempFile = fileTeX ?: File

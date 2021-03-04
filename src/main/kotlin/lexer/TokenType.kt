@@ -2,7 +2,7 @@ package lexer
 
 enum class TokenType {
     // Keywords
-    DEF, ID, LCB, RCB;
+    DEF, ID, LCB, RCB, IN, RATIO, COLON;
 
     // Objects
 // POINT, LINE, TRIANGLE;

@@ -13,3 +13,16 @@ triangle (A B C)
 circle (omega) inscribed (A B C)
 
 # Нужны полуплоскости?
+
+
+def point in (A B) ratio 1:3
+def bisector      (A M) in (A B C)
+def median        (A M) to (B C)
+def perpendicular (A M) to (B C)
+
+
+def triangle (A  B  C) with (A B) horizontal
+def intersections (A), (C) of (A B C) x (A M)
+style (A B) dashed
+
+(M L), circle (A B C), (A) & (C): (A) : ()

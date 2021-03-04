@@ -13,6 +13,8 @@ data class XYPoint(var x: Double = 0.0, var y: Double = 0.0) {
         this.y = y
     }
 
+    fun moveTo(other: XYPoint) = moveTo(other.x, other.y)
+
     fun shift(x: Double, y: Double) {
         this.x += x
         this.y += y

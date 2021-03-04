@@ -12,7 +12,7 @@ abstract class PlanarObject<XY> {
     abstract fun define(): XY
     abstract fun corePoints(): List<MovablePoint>
 
-    open fun setup(random: Random, circle: XYCircle) {
+    open fun setup(area: XYCircle, entropy: Random) {
         // No setup by default
     }
 

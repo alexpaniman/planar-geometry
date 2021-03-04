@@ -13,16 +13,16 @@ class Line(val from: Point, val to: Point) : PlanarObject<XYLine>() {
     override fun define() = XYLine(from.define(), to.define())
     override fun corePoints() = from.corePoints() + to.corePoints()
 
-    override fun setup(random: Random, circle: XYCircle) {
+    override fun setup(area: XYCircle, entropy: Random) {
         val points = corePoints()
 
         val part = 2.0 * PI / points.size
         for ((index, point) in points.withIndex()) {
-            val rotate = ((index + 0.15) * part..(index + 1 - 0.15) * part).random(random)
-            val radius = (circle.radius * 0.6..0.9 * circle.radius) // TODO Adjustable
-                .random(random)
+            val rotate = ((index + 0.15) * part..(index + 1 - 0.15) * part).random(entropy)
+            val radius = (area.radius * 0.6..0.9 * area.radius) // TODO Adjustable
+                .random(entropy)
 
-            val center = circle.center
+            val center = area.center
 
             point.define().moveTo(
                 center.x + radius * cos(rotate),

@@ -1,1 +1,2 @@
-def line (A B)
+def triangle (A B C)
+def point (M) in (A B C)
