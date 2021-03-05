@@ -53,22 +53,42 @@ abstract class Parser<TInput, TValue> {
             }
         }
 
-    inline fun <TNew> map(crossinline map: (TValue) -> TNew): Parser<TInput, TNew> =
+    inline fun <TNew> transform(crossinline map: (TInput, TValue) -> Pair<TNew, TInput>): Parser<TInput, TNew> =
         fromLambda { input ->
             when (val result = this.parse(input)) {
                 is Success -> {
                     val (value, rest) = result
-                    Success(map(value), rest)
+                    val (valueNew, restNew) = map(rest, value)
+                    Success(valueNew, restNew)
                 }
 
                 is Error -> result
             }
         }
 
-    infix fun <RValue> right(other: Parser<TInput, RValue>) =
+    inline fun <TNew> map(crossinline map: (TValue) -> TNew) =
+        transform { input, value -> map(value) to input }
+
+    inline fun ensure(crossinline error: (TInput) -> Error, crossinline condition: (TValue) -> Boolean): Parser<TInput, TValue> =
+        fromLambda { input ->
+            when(val parsed = this.parse(input)) {
+               is Success -> {
+                   val (value, _) = parsed
+
+                   val check = condition(value)
+                   if (check)
+                       parsed
+                   else error(input)
+               }
+
+               is Error -> parsed
+            }
+        }
+
+    infix fun <RValue> erst(other: Parser<TInput, RValue>) =
         combine(other) { fst, _ -> fst }
 
-    infix fun <RValue> left(other: Parser<TInput, RValue>) =
+    infix fun <RValue> then(other: Parser<TInput, RValue>) =
         combine(other) { _, snd -> snd }
 
     fun many(min: Int = 0, max: Int = Int.MAX_VALUE) = fromLambda<TInput, List<TValue>> { input ->
@@ -91,4 +111,25 @@ abstract class Parser<TInput, TValue> {
 
         error ?: Success(list, lastRest)
     }
+
+    infix fun trying(other: Parser<TInput, TValue>): Parser<TInput, TValue> =
+        fromLambda { input ->
+            when(val first = this.parse(input)) {
+                is Success -> when (val second = other.parse(input)) {
+                    is Success -> Success(second.value, second.rest)
+                    is Error -> Success(first.value, first.rest)
+                }
+
+                is Error -> when (val second = other.parse(input)) {
+                    is Success -> Success(second.value, second.rest)
+                    is Error -> Error(first.errorHolder.either(second.errorHolder))
+                }
+            }
+        }
+
+    fun optional() = many(0, 1)
+
+    fun repeat(num: Int) = many(num, num)
+
+    fun stringify() = map { "$it" }
 }

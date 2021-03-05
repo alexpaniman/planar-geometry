@@ -3,7 +3,7 @@ package parsec
 import parsec.Parser.Companion.fromLambda
 import parsec.Result.*
 
-data class StringInput(val input: String, val position: Int = 0) {
+data class StringInput<TContext>(val input: String, val context: TContext, val position: Int = 0) {
     val isEmpty: Boolean
         get() = position !in input.indices
     val current: Char get() = input[position]
@@ -11,10 +11,10 @@ data class StringInput(val input: String, val position: Int = 0) {
     fun shrink(shift: Int) =
         this.copy(position = position + shift)
 
-    operator fun get(i: Int) = input[position + i]
+    operator fun get(i: Int) = input.getOrNull(position + i)
 }
 
-class ErrorInContext(private val expected: String, private val context: StringInput): ErrorHolder() {
+class ErrorInContext(private val expected: String, private val context: StringInput<*>): ErrorHolder() {
     override val message: String
         get() {
             var column = 1
@@ -57,9 +57,12 @@ class ErrorInContext(private val expected: String, private val context: StringIn
     }
 }
 
-fun StringInput.contextualError(expected: String) = Error(ErrorInContext(expected, this))
+fun StringInput<*>.contextualError(expected: String) = Error(ErrorInContext(expected, this))
 
-inline fun satisfy(expectedMessage: String, crossinline condition: (Char) -> Boolean): Parser<StringInput, Char> =
+inline fun <TContext, TValue> Parser<StringInput<TContext>, TValue>.ensure(expected: String, crossinline condition: (TValue) -> Boolean) =
+    ensure({ it.contextualError(expected) }, condition)
+
+inline fun <TContext> satisfy(expectedMessage: String, crossinline condition: (Char) -> Boolean): Parser<StringInput<TContext>, Char> =
     fromLambda { input ->
         val symbol = input.current
         if (!input.isEmpty && condition(symbol))
@@ -68,9 +71,9 @@ inline fun satisfy(expectedMessage: String, crossinline condition: (Char) -> Boo
             input.contextualError(expectedMessage)
     }
 
-fun char(symbol: Char) = satisfy("'$symbol'") { it == symbol }
+fun <TContext> char(symbol: Char) = satisfy<TContext>("'$symbol'") { it == symbol }
 
-fun word(word: String): Parser<StringInput, String> =
+fun <TContext> word(word: String): Parser<StringInput<TContext>, String> =
     fromLambda { input ->
         var matches = true
         for ((index, symbol) in word.withIndex())
@@ -84,29 +87,34 @@ fun word(word: String): Parser<StringInput, String> =
             input.contextualError("\"$word\"")
     }
 
-val blank = satisfy("space or tabulation") {
+fun <TContext> blank() = satisfy<TContext>("space or tabulation") {
     it.isWhitespace()
 }
 
-val space = blank.many(1)
+fun <TContext> space() = blank<TContext>().many(1)
 
-val digit = satisfy("digit") {
+fun <TContext> digit() = satisfy<TContext>("digit") {
     it.isDigit()
 }
 
-val letter = satisfy("letter") {
+fun <TContext> letter() = satisfy<TContext>("letter") {
     it.isLetter()
 }
 
-private val symbol = letter or digit or char('_')
-val identifier = (letter append symbol.many()).map { it.joinToString("") }
+private fun <TContext> symbol() = letter<TContext>() or digit() or char('_')
+fun <TContext> identifier() = (letter<TContext>() append symbol<TContext>().many())
+    .map { it.joinToString("") }
 
-val eof = fromLambda<StringInput, String> { input ->
-    if (input.isEmpty) Success("", input)
+fun <TContext> eof() = fromLambda<StringInput<TContext>, String> { input ->
+    if (input.isEmpty)
+        Success("", input)
     else input.contextualError("end of file")
 }
 
-fun spacedWord(word: String) = word(word) left blank
+fun <TContext> eol() = eof<TContext>() or
+        satisfy<TContext>("end of line") { it == '\n' }.stringify()
+
+fun <TContext> spacedWord(word: String) = word<TContext>(word) then blank()
 
 @JvmName("appendValueToList")
 infix fun <TInput, TValue> Parser<TInput, TValue>.append(other: Parser<TInput, List<TValue>>) =

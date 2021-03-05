@@ -3,7 +3,9 @@ package objects.polygon
 import DEBUG_TIKZ
 import objects.PlanarObject
 import objects.circle.XYCircle
+import objects.container.AreaContainer
 import objects.container.CircularContainer
+import objects.container.SurfaceContainer
 import objects.line.XYLine
 import objects.point.Point
 import objects.point.XYPoint
@@ -12,7 +14,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class Polygon(val points: List<Point>): PlanarObject<XYPolygon>() {
+class Polygon(val points: List<Point>): PlanarObject<XYPolygon>(), AreaContainer, SurfaceContainer {
     private val touches: (XYCircle) -> Boolean = touches@ {
         val segments = points.zip(points.drop(1) + points.first())
 
@@ -28,6 +30,12 @@ class Polygon(val points: List<Point>): PlanarObject<XYPolygon>() {
     }
 
     val areaContainer = CircularContainer(2.0, 0.0, 0.01, touches = touches)
+
+    override fun addInObject(obj: PlanarObject<*>) {
+        areaContainer.objects.add(obj)
+    }
+
+    override fun addOnObject(obj: PlanarObject<*>) = TODO()
 
     override fun define() = XYPolygon(points)
 
