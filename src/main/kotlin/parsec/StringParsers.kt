@@ -64,9 +64,8 @@ inline fun <TContext, TValue> Parser<StringInput<TContext>, TValue>.ensure(expec
 
 inline fun <TContext> satisfy(expectedMessage: String, crossinline condition: (Char) -> Boolean): Parser<StringInput<TContext>, Char> =
     fromLambda { input ->
-        val symbol = input.current
-        if (!input.isEmpty && condition(symbol))
-            Success(symbol, input.shrink(1))
+        if (!input.isEmpty && condition(input.current))
+            Success(input.current, input.shrink(1))
         else
             input.contextualError(expectedMessage)
     }
@@ -91,7 +90,7 @@ fun <TContext> blank() = satisfy<TContext>("space or tabulation") {
     it.isWhitespace()
 }
 
-fun <TContext> space() = blank<TContext>().many(1)
+fun <TContext> space(min: Int = 1) = blank<TContext>().many(min)
 
 fun <TContext> digit() = satisfy<TContext>("digit") {
     it.isDigit()

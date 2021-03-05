@@ -1,9 +1,8 @@
 import latex.compileTikZ
-import lexer.Lexer
 import objects.circle.XYCircle
 import objects.container.Illustration
 import objects.point.XYPoint
-import parser.OldParser
+import parser.parse
 import tikz.TikZ
 import java.io.File
 import kotlin.random.Random
@@ -16,12 +15,10 @@ fun openInZathura(file: File) {
 val DEBUG_TIKZ = TikZ()
 
 fun main() {
-    val file = File("src/main/resources/example")
+    val inputText = File("src/main/resources/example")
+        .readText()
 
-    val tokens = Lexer(file)
-        .tokenize()
-    val objects = OldParser()
-        .parse(tokens)
+    val objects = parse(inputText)
         .toMutableList()
 
     val illustration = Illustration(objects)
