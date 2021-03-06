@@ -1,6 +1,5 @@
 package objects.polygon
 
-import DEBUG_TIKZ
 import objects.PlanarObject
 import objects.circle.XYCircle
 import objects.container.AreaContainer
@@ -44,12 +43,14 @@ class Polygon(val points: List<Point>): PlanarObject<XYPolygon>(), AreaContainer
         .flatten()
 
     override fun setup(area: XYCircle, entropy: Random) {
+        val shift = entropy.nextDouble(- PI / 4.0, PI / 4.0)
+
         val part = 2.0 * PI / points.size
         for ((index, point) in points.withIndex()) {
             val rotate = entropy.nextDouble(
                 (index + 0.3) * part,
                 (index + 1 - 0.3) * part
-            )
+            ) + shift
 
             val radius = entropy.nextDouble(
                 area.radius * 0.6,
@@ -63,7 +64,7 @@ class Polygon(val points: List<Point>): PlanarObject<XYPolygon>(), AreaContainer
             val circleRadius = area.radius - area.center.distanceTo(position)
 
             val circle = XYCircle(position, circleRadius)
-            point.setup(circle, entropy)
+            point.softSetup(circle, entropy)
 
 //            DEBUG_TIKZ.draw(entropy.nextInt(), "\\draw (${position.x}, ${position.y}) circle [radius = ${circleRadius}];")
         }

@@ -4,7 +4,7 @@ import objects.style.Style
 import objects.polygon.Polygon
 import tikz.TikZ
 
-object PointsPolygonStyle : Style<Polygon> {
+object PolygonStyle : Style<Polygon> {
     override fun draw(obj: Polygon, tikz: TikZ) {
         val definedPoints = obj.points
 

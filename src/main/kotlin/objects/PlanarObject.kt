@@ -16,11 +16,20 @@ abstract class PlanarObject<XY> {
         // No setup by default
     }
 
+    var passive = false
+    fun softSetup(area: XYCircle, entropy: Random) {
+        if (!passive)
+            setup(area, entropy)
+    }
+
     fun draw(tikz: TikZ) {
         style?.draw(this, tikz)
     }
 
     inline fun <reified T: PlanarObject<XY>> applyStyle(style: Style<T>): T {
+        if (this.style != null)
+            return this as T
+
         // Type system went crazy
         @Suppress("UNCHECKED_CAST")
         this.style = style as Style<PlanarObject<XY>>
