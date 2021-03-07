@@ -91,10 +91,11 @@ class CircularContainer(
             }
         } while (!finished)
 
-        for (currentArea in nestedAreas) {
-            val point = currentArea.center
-            DEBUG_TIKZ.draw(entropy.nextInt(), "\\draw (${point.x}, ${point.y}) circle [radius = ${currentArea.radius}];")
-        }
+        // TODO remove
+//        for (currentArea in nestedAreas) {
+//            val point = currentArea.center
+//            DEBUG_TIKZ.draw(entropy.nextInt(), "\\draw (${point.x}, ${point.y}) circle [radius = ${currentArea.radius}];")
+//        }
 
         // Then we're gonna pass generated area to every object
         for ((currentObject, currentArea) in objects.zip(nestedAreas))

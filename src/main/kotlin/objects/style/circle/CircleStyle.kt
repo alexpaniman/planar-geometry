@@ -11,5 +11,7 @@ object CircleStyle: Style<Circle> {
         val radius = definedCircle.radius
 
         tikz.draw(obj, "\\draw (${center.x}, ${center.y}) circle [radius = $radius];")
+
+        obj.areaContainer.objects.forEach { it.draw(tikz) }
     }
 }

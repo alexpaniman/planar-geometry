@@ -1,12 +1,16 @@
 package parser
 
 import objects.PlanarObject
+import objects.circle.Circle
 import objects.container.AreaContainer
 import objects.line.Line
 import objects.point.AnyPoint
 import objects.point.Point
 import objects.point.RatioPoint
 import objects.polygon.Polygon
+import objects.style.Style
+import objects.style.circle.CircleStyle
+import objects.style.point.PointStyle
 import objects.style.point.labeled.LabeledPointLineStyle
 import objects.style.point.labeled.LabeledPointPolygonStyle
 import objects.style.point.labeled.LabeledPointRotatedStyle
@@ -47,7 +51,7 @@ data class ParserContext(
 
         val obj = if (create != null)
             objectsNew.computeIfAbsent(name, create)
-        else objectsNew[name]
+        else objectsNew[name] ?: points[name]
 
         return obj to this.copy(objects = objectsNew)
     }
@@ -83,8 +87,10 @@ private fun points(num: Int, compute: ((String) -> Point)? = null) = points(num,
 fun planarObject(create: ((String) -> PlanarObject<*>)? = null):
         Parser<StringInput<ParserContext>, Pair<String, PlanarObject<*>>> =
 
-    points().transform { input, name ->
-        val stringName = name.joinToString(" ") { (name, _, _) -> name }
+    (char<ParserContext>('(') then
+            ((identifier<ParserContext>() erst blank()).many() append identifier()) erst
+            char(')')).transform { input, name ->
+        val stringName = name.joinToString(" ")
 
         val (obj, ctx) = input.context.obj(stringName, create)
         (stringName to obj) to input.copy(context = ctx)
@@ -159,7 +165,16 @@ private val ratioPoint = (spacedWord<ParserContext>("point") then
 
 private val point = randomPoint trying ratioPoint
 
-private val defineGlobal = spacedWord<ParserContext>("def") then (polygonalShapes or point)
+private val circle = (spacedWord<ParserContext>("circle") then
+        char('(') then identifier() erst char(')'))
+    .transform { input, name ->
+        val circle = Circle(AnyPoint().applyStyle(PointStyle), AnyPoint())
+            .applyStyle(CircleStyle)
+        val ctx = input.context.addObj(name, circle)
+        circle to input.copy(context = ctx)
+    }
+
+private val defineGlobal = spacedWord<ParserContext>("def") then (polygonalShapes or point or circle)
 
 private val containerObject = planarObject()
     .map { (_, obj) -> obj }
@@ -175,12 +190,25 @@ private val defineNested = (defineGlobal erst blank() erst spacedWord("in"))
         !passive
     }.map { (_, obj) -> obj }
 
-private val definition = (defineGlobal erst eol()) trying (defineNested erst eol())
+private val definition =  (defineNested erst eol()) or (defineGlobal erst eol())
 
 private val comment = char<ParserContext>('#').map { null } erst
         anything<ParserContext>().many() erst eol()
 
-private val statement = definition or comment
+private val styleHide = spacedWord<ParserContext>("style hide") then planarObject()
+    .map { (_, obj) -> obj.hide(); null }
+
+private val styleHideLabel = spacedWord<ParserContext>("style hide labels") then points()
+    .map { points ->
+        points.forEach { (_, _, point) ->
+            point.hide()
+            point.applyStyle(PointStyle)
+        }
+
+        null
+    }
+
+private val statement = definition or comment or styleHide or styleHideLabel
 private val statements = (statement erst space(min = 0)).many(min = 1) erst eof()
 
 fun parse(input: String, currentMode: Boolean = false): List<PlanarObject<*>> {

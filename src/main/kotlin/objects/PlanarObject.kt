@@ -2,6 +2,7 @@ package objects
 
 import objects.circle.XYCircle
 import objects.point.MovablePoint
+import objects.style.InvisibleStyle
 import objects.style.Style
 import tikz.TikZ
 import kotlin.random.Random
@@ -26,7 +27,12 @@ abstract class PlanarObject<XY> {
         style?.draw(this, tikz)
     }
 
-    inline fun <reified T: PlanarObject<XY>> applyStyle(style: Style<T>): T {
+    inline fun <reified T: PlanarObject<XY>> applyStyle(style: Style<T>?): T {
+        if (style == null) {
+            this.style = null
+            return this as T
+        }
+
         if (this.style != null)
             return this as T
 
@@ -35,5 +41,9 @@ abstract class PlanarObject<XY> {
         this.style = style as Style<PlanarObject<XY>>
 
         return this as T
+    }
+
+    fun hide() {
+        style = null
     }
 }
