@@ -6,7 +6,7 @@ import objects.container.CircularContainer
 import objects.point.Point
 import kotlin.random.Random
 
-class Circle(private val center: Point, private val side: Point): PlanarObject<XYCircle>(), AreaContainer { // TODO PointIn, PointOn, make it abstract
+open class Circle(private val center: Point, private val side: Point): PlanarObject<XYCircle>(), AreaContainer { // TODO PointIn, PointOn, make it abstract
     val areaContainer = CircularContainer(2.0, 0.0, 0.01) {
         it.intersects(this.define())
     }

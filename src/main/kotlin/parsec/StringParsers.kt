@@ -145,7 +145,7 @@ infix fun <TInput, TValue> Parser<TInput, TValue>.append(other: Parser<TInput, L
     this.combine(other) { fst, snd -> listOf(fst) + snd }
 
 @JvmName("appendListToValue")
-infix fun <TInput, TValue> Parser<TInput, List<TValue>>.append(other: Parser<TInput, TValue>) =
+infix fun <TInput, TValue> Parser<TInput, List<TValue>>.appendV(other: Parser<TInput, TValue>) =
     this.combine(other) { fst, snd -> fst + snd }
 
 @JvmName("appendListToList")

@@ -21,9 +21,10 @@ fun copy(input: String) {
 
 val DEBUG_TIKZ = TikZ()
 
-private fun wrapInTikZ(source: String, tikz: String) = """
+private fun wrapInTikZ(seed: Long, source: String, tikz: String) = """
         | \begin{minipage}{0.45\textwidth}
         | \begin{verbatim}
+        | seed $seed
         | ${source.lines().filter { it.isNotBlank() && !it.startsWith('#') }.joinToString("\n")}
         | \end{verbatim}
         | \end{minipage}
@@ -51,8 +52,6 @@ fun main() {
     val illustration = Illustration(objects)
 
     val seed = System.currentTimeMillis()
-    println("Seed: $seed\n")
-
     val random = Random(seed)
 
     val circle = XYCircle(XYPoint(0.0, 0.0), 5.0)
@@ -61,7 +60,7 @@ fun main() {
     illustration.draw(DEBUG_TIKZ)
 
     val tikzCode = DEBUG_TIKZ.tikzify()
-    println(wrapInTikZ(inputText, tikzCode))
+    println(wrapInTikZ(seed, inputText, tikzCode))
 
     compileTikZ(tikzCode, "my-test-tikzpicture")
     // openInZathura(output)

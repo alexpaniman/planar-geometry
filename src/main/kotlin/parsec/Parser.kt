@@ -36,6 +36,28 @@ abstract class Parser<TInput, out TValue> {
             }
         }
 
+    inline fun <TCombined, RValue> combineT(other: Parser<TInput, RValue>, crossinline combineT: (TInput, TValue, RValue) -> Pair<TCombined, TInput>) =
+        fromLambda<TInput, TCombined> { input ->
+            when(val parseFirst = this.parse(input)) {
+                is Success -> {
+                    val (firstValue, firstRest) = parseFirst
+
+                    when(val parseSecond = other.parse(firstRest)) {
+                        is Success -> {
+                            val (secondValue, secondRest) = parseSecond
+                            val (combinedValue, newInput) = combineT(secondRest, firstValue, secondValue)
+
+                            Success(combinedValue, newInput)
+                        }
+
+                        is Error -> parseSecond
+                    }
+                }
+
+                is Error -> parseFirst
+            }
+        }
+
     inline fun <TNew> transform(crossinline map: (TInput, TValue) -> Pair<TNew, TInput>): Parser<TInput, TNew> =
         fromLambda { input ->
             when (val result = this.parse(input)) {

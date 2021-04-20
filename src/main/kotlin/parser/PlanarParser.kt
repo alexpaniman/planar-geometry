@@ -4,11 +4,8 @@ import objects.PlanarObject
 import objects.circle.Circle
 import objects.container.AreaContainer
 import objects.line.Line
-import objects.point.AnyPoint
-import objects.point.Point
-import objects.point.RatioPoint
+import objects.point.*
 import objects.polygon.Polygon
-import objects.style.Style
 import objects.style.circle.CircleStyle
 import objects.style.point.PointStyle
 import objects.style.point.labeled.LabeledPointLineStyle
@@ -78,7 +75,7 @@ private fun points(
 ): Parser<StringInput<ParserContext>, List<ParsedPoint>> {
 
     val singlePoint = point(compute)
-    val points = (singlePoint erst blank()).many(min - 1, max) append singlePoint
+    val points = (singlePoint erst blank()).many(min - 1, max) appendV singlePoint
     return char<ParserContext>('(') then points erst char(')')
 }
 
@@ -88,7 +85,7 @@ fun planarObject(create: ((String) -> PlanarObject<*>)? = null):
         Parser<StringInput<ParserContext>, Pair<String, PlanarObject<*>>> =
 
     (char<ParserContext>('(') then
-            ((identifier<ParserContext>() erst blank()).many() append identifier()) erst
+            ((identifier<ParserContext>() erst blank()).many() appendV identifier()) erst
             char(')')).transform { input, name ->
         val stringName = name.joinToString(" ")
 
@@ -165,7 +162,7 @@ private val ratioPoint = (spacedWord<ParserContext>("point") then
 
 private val point = randomPoint trying ratioPoint
 
-private val circle = (spacedWord<ParserContext>("circle") then
+private val circleBase = (spacedWord<ParserContext>("circle") then
         char('(') then identifier() erst char(')'))
     .transform { input, name ->
         val circle = Circle(AnyPoint().applyStyle(PointStyle), AnyPoint())
@@ -173,6 +170,26 @@ private val circle = (spacedWord<ParserContext>("circle") then
         val ctx = input.context.addObj(name, circle)
         circle to input.copy(context = ctx)
     }
+
+private fun sw(w: String) = spacedWord<ParserContext>(w)
+private fun ch(c: Char) = char<ParserContext>(c)
+private val id = identifier<ParserContext>()
+private val space = space<ParserContext>(min = 1)
+
+private val describedCircle = (sw("circle") then ch('(') then id erst ch(')') erst space erst sw("described"))
+    .combineT(points(num = 3, compute = pointAny)) { input, circle, triangle ->
+        val points = triangle.map { it.point }
+        val center = DescribedCircleCenterPoint(points)
+            .applyStyle(PointStyle)
+        val create = Circle(center, triangle.first().point)
+            .applyStyle(CircleStyle)
+            .also { it.passive = true }
+
+        val ctx = input.context.addObj(circle, create)
+        create to input.copy(context = ctx)
+    }
+
+private val circle = describedCircle or circleBase
 
 private val defineGlobal = spacedWord<ParserContext>("def") then (polygonalShapes or point or circle)
 
@@ -190,7 +207,22 @@ private val defineNested = (defineGlobal erst blank() erst spacedWord("in"))
         !passive
     }.map { (_, obj) -> obj }
 
-private val definition =  (defineNested erst eol()) or (defineGlobal erst eol())
+private val intersection = (sw("assign") then (ch('(') then id erst ch(')') erst space).many(min = 1))
+    .combineT(sw("to") then (points() erst space(min = 0) erst sw("x")).many().appendV(points())) { input, names, objects ->
+        check(names.size == 1)
+        check(objects.size == 2)
+        val separated = objects
+            .map { (a, b) -> Line(a.point, b.point) }
+
+        val point = IntersectionOfLines(separated[0], separated[1])
+            .applyStyle(PointStyle)
+            .also { it.passive = true }
+
+        val ctx = input.context.addPoint(names[0], point)
+        point to input.copy(context = ctx)
+    }
+
+private val definition = (defineNested erst eol()) or (defineGlobal erst eol()) or (intersection erst eol())
 
 private val comment = char<ParserContext>('#').map { null } erst
         anything<ParserContext>().many() erst eol()

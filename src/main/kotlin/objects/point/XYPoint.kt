@@ -20,6 +20,9 @@ data class XYPoint(var x: Double = 0.0, var y: Double = 0.0) {
         this.y += y
     }
 
+    fun shifted(x: Double, y: Double) =
+        copy().also { it.shift(x, y) }
+
     fun vectorLength() = distanceTo(0.0, 0.0)
 
     fun normalize() {
@@ -42,4 +45,13 @@ data class XYPoint(var x: Double = 0.0, var y: Double = 0.0) {
         this.x += k * (other.x - this.x)
         this.y += k * (other.y - this.y)
     }
+
+    operator fun plus(other: XYPoint) = copy()
+        .apply { add(other) }
+
+    operator fun times(num: Double) = copy()
+        .apply { multiply(num) }
+
+    operator fun div(num: Double) = copy()
+        .apply { multiply(1.0 / num) }
 }
