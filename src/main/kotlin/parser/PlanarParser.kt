@@ -81,16 +81,27 @@ private fun points(
 
 private fun points(num: Int, compute: ((String) -> Point)? = null) = points(num, num, compute)
 
-fun planarObject(create: ((String) -> PlanarObject<*>)? = null):
+fun planarObject(create: ((String) -> PlanarObject<*>)? = null, createSegments: Boolean = false):
         Parser<StringInput<ParserContext>, Pair<String, PlanarObject<*>>> =
 
     (char<ParserContext>('(') then
             ((identifier<ParserContext>() erst blank()).many() appendV identifier()) erst
-            char(')')).transform { input, name ->
-        val stringName = name.joinToString(" ")
+            char(')')).transform { input, names ->
+        val stringName = names.joinToString(" ")
 
-        val (obj, ctx) = input.context.obj(stringName, create)
-        (stringName to obj) to input.copy(context = ctx)
+        var (existingObj, context) = input.context.obj(stringName, create)
+        if (existingObj == null && createSegments) {
+            val points = names.mapNotNull {
+                val (obj, ctx) = context.point(it)
+                context = ctx; obj?.point
+            }
+
+            if (points.size == names.size) {
+                existingObj = Polygon(points)
+            }
+        }
+
+        (stringName to existingObj) to input.copy(context = context)
     }.ensure("existing object name") { (_, obj) ->
         obj != null
     }.map { (name, obj) -> name to obj!! }
@@ -173,6 +184,7 @@ private val circleBase = (spacedWord<ParserContext>("circle") then
 
 private fun sw(w: String) = spacedWord<ParserContext>(w)
 private fun ch(c: Char) = char<ParserContext>(c)
+private fun sc(c: Char) = space then ch(c) erst space
 private val id = identifier<ParserContext>()
 private val space = space<ParserContext>(min = 1)
 
@@ -207,19 +219,26 @@ private val defineNested = (defineGlobal erst blank() erst spacedWord("in"))
         !passive
     }.map { (_, obj) -> obj }
 
-private val intersection = (sw("assign") then (ch('(') then id erst ch(')') erst space).many(min = 1))
-    .combineT(sw("to") then (points() erst space(min = 0) erst sw("x")).many().appendV(points())) { input, names, objects ->
-        check(names.size == 1)
-        check(objects.size == 2)
+// private val objectL = ch('(') then (id erst space).many() appendV id erst ch(')')
+
+private val pointNew = ch('(') then id erst ch(')')
+private val planarObj = planarObject(createSegments = true)
+
+private val intersection = (sw("assign") then (pointNew erst space).many(min = 1))
+    .combineT(sw("to") then (planarObj erst space erst ch('x') erst space).many() appendV planarObj) { input, names, objects ->
         val separated = objects
-            .map { (a, b) -> Line(a.point, b.point) }
+            .map { (_, obj) -> obj }
 
-        val point = IntersectionOfLines(separated[0], separated[1])
-            .applyStyle(PointStyle)
-            .also { it.passive = true }
+        var context = input.context
+        var intersection: Point? = null
+        for ((index, name) in names.withIndex()) {
+            intersection = SetOfIntersections(index, separated)
+                .also { it.passive = true }
+                .also { it.applyStyle(LabeledPointRotatedStyle(name, PI / 3.0)) }
+            context = context.addPoint(name, intersection)
+        }
 
-        val ctx = input.context.addPoint(names[0], point)
-        point to input.copy(context = ctx)
+        intersection!! to input.copy(context = context)
     }
 
 private val definition = (defineNested erst eol()) or (defineGlobal erst eol()) or (intersection erst eol())

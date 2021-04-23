@@ -41,7 +41,7 @@ class CircularContainer(
         }
 
     fun setup(area: XYCircle, entropy: Random) {
-//        DEBUG_TIKZ.draw(entropy.nextInt(), "\\draw (${area.center.x}, ${area.center.y}) circle [radius = ${area.radius}];")
+//        DEBUG_TIKZ.draw(Math.random(), "\\draw (${area.center.x}, ${area.center.y}) circle [radius = ${area.radius}];")
         if (objects.size == 1)
         // Pass this object's area to the single child
             objects.first().softSetup(area, entropy)
@@ -94,7 +94,7 @@ class CircularContainer(
         // TODO remove
 //        for (currentArea in nestedAreas) {
 //            val point = currentArea.center
-//            DEBUG_TIKZ.draw(entropy.nextInt(), "\\draw (${point.x}, ${point.y}) circle [radius = ${currentArea.radius}];")
+//            DEBUG_TIKZ.draw(Math.random(), "\\draw (${point.x}, ${point.y}) circle [radius = ${currentArea.radius}];")
 //        }
 
         // Then we're gonna pass generated area to every object

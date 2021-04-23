@@ -1,4 +1,9 @@
-def polygon (A B C D E F)
-assign (I) to (A F) x (D E)
-def segment (F I)
-def segment (E I)
+def triangle (A B C)
+def point (M) on (B C) ratio 1:2
+def circle (omega0) described (A B M)
+def circle (omega1) described (C M A)
+style hide (A B C)
+style hide (M)
+# def segment (A B)
+assign (X) (Y) to (omega1) x (omega0)
+def point (X)

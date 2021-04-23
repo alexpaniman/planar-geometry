@@ -117,6 +117,8 @@ abstract class Parser<TInput, out TValue> {
         error ?: Success(list, lastRest)
     }
 
+    infix fun separatedBy(separator: Parser<TInput, *>) = this.many() erst separator appendV this
+
     fun optional() = many(0, 1)
 
     fun repeat(num: Int) = many(num, num)

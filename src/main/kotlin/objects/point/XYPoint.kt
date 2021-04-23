@@ -6,7 +6,7 @@ import kotlin.math.sqrt
 data class XYPoint(var x: Double = 0.0, var y: Double = 0.0) {
     fun distanceTo(x: Double, y: Double) = sqrt((this.x - x).pow(2) + (this.y - y).pow(2))
 
-    fun distanceTo(other: XYPoint) = distanceTo(other.x, other.y)
+    infix fun distanceTo(other: XYPoint) = distanceTo(other.x, other.y)
 
     fun moveTo(x: Double, y: Double) {
         this.x = x
@@ -33,6 +33,9 @@ data class XYPoint(var x: Double = 0.0, var y: Double = 0.0) {
 
     fun add(other: XYPoint) = shift(other.x, other.y)
 
+    fun subtract(other: XYPoint) =
+        shift(- other.x, - other.y)
+
     fun multiply(k: Double) {
         x *= k
         y *= k
@@ -48,6 +51,9 @@ data class XYPoint(var x: Double = 0.0, var y: Double = 0.0) {
 
     operator fun plus(other: XYPoint) = copy()
         .apply { add(other) }
+
+    operator fun minus(other: XYPoint) = copy()
+        .apply { subtract(other) }
 
     operator fun times(num: Double) = copy()
         .apply { multiply(num) }
