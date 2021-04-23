@@ -1,14 +1,12 @@
 package objects.line
 
-import DEBUG_TIKZ
 import objects.circle.XYCircle
 import objects.point.XYPoint
-import objects.style.line.LineStyle
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class XYLine(private val from: XYPoint, private val to: XYPoint) {
+class XYLine(val from: XYPoint, val to: XYPoint) {
     companion object {
         @JvmStatic fun withTangent(k: Double, point: XYPoint) =
             XYLine(point, point.shifted(1.0, k))
@@ -67,7 +65,7 @@ class XYLine(private val from: XYPoint, private val to: XYPoint) {
                 val verticalVector = (from - to)
                     .also {
                         it.normalize()
-                        val length = sqrt(circle.radius.pow(2.0) - radiusVector.vectorLength().pow(2.0))
+                        val length = sqrt(circle.radius.pow(2.0) - radiusVector.len.pow(2.0))
                         it.multiply(length)
                     }
 

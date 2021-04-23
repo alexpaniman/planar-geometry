@@ -151,17 +151,17 @@ private val randomPoint = (spacedWord<ParserContext>("point") then points(num = 
     }
 
 private val ratio = (spacedWord<ParserContext>("ratio") then number())
-    .combine(char<ParserContext>(':') then number()) { fst, snd -> fst / snd }
+    .combine(char<ParserContext>(':') then number()) { fst, snd -> fst to snd }
 
 private val ratioPoint = (spacedWord<ParserContext>("point") then
         char('(') then identifier() erst char(')'))
     .combine(blank<ParserContext>() then spacedWord("on") then points(num = 2)) { fst, snd -> fst to snd }
-    .combine(blank<ParserContext>() then ratio) { fst, ratio ->
+    .combine(blank<ParserContext>() then ratio) { fst, (numerator, denominator) ->
         val (name, points) = fst
         val (first, second) = points.map { (_, _, point) -> point }
 
         val container = Line(first, second)
-        val point = RatioPoint(first, second, ratio)
+        val point = RatioPoint(first, second, numerator / denominator)
             .applyStyle(LabeledPointLineStyle(name, container))
 
         name to point.also { it.passive = true }
@@ -201,7 +201,35 @@ private val describedCircle = (sw("circle") then ch('(') then id erst ch(')') er
         create to input.copy(context = ctx)
     }
 
-private val circle = describedCircle or circleBase
+private val inscribedCircle = (sw("circle") then ch('(') then id erst ch(')') erst space erst sw("inscribed"))
+    .combineT(points(num = 3, compute = pointAny)) { input, circle, triangle ->
+        val points = triangle.map { it.point }
+
+        val center = InscribedCircleCenterPoint(points)
+            .applyStyle(PointStyle)
+        val sidePoint = Projection(center, Line(points[0], points[1]))
+
+        val create = Circle(center, sidePoint)
+            .applyStyle(CircleStyle)
+            .also { it.passive = true }
+
+        val ctx = input.context.addObj(circle, create)
+        create to input.copy(context = ctx)
+    }
+
+
+private val circleByTwoPoints = (sw("circle") then ch('(') then id erst ch(')'))
+    .combine (space then sw("center" ) then points(num = 1)) { name, point -> name to point }
+    .combineT(space then sw("through") then points(num = 1)) { input, (name, center), through ->
+        val circle = Circle(center[0].point, through[0].point)
+            .applyStyle(CircleStyle)
+            .also { it.passive = true }
+
+        val ctx = input.context.addObj(name, circle)
+        circle to input.copy(context = ctx)
+    }
+
+private val circle = describedCircle or inscribedCircle or circleByTwoPoints or circleBase
 
 private val defineGlobal = spacedWord<ParserContext>("def") then (polygonalShapes or point or circle)
 
@@ -241,7 +269,48 @@ private val intersection = (sw("assign") then (pointNew erst space).many(min = 1
         intersection!! to input.copy(context = context)
     }
 
-private val definition = (defineNested erst eol()) or (defineGlobal erst eol()) or (intersection erst eol())
+private val perpendicular = (sw("def") then sw("perpendicular") then ch('(') then point() erst space)
+    .combine(id erst ch(')')) { point0, point1 -> point0 to point1 }
+    .combineT(space then sw("to") then points(num = 2)) { input, (point, projection), (from, to) ->
+        val line = Line(from.point, to.point)
+        val projected = Projection(point.point, line)
+            .also { it.passive = true }
+
+        val segment = Polygon(listOf(point.point, projected))
+            .applyStyle(PolygonStyle)
+            .also { it.passive = true }
+
+        projected.applyStyle(LabeledPointPolygonStyle(projection, segment))
+
+        val context = input.context.addPoint(projection, projected)
+        segment to input.copy(context = context)
+    }
+
+private val sector = (sw("def") then sw("sector") then ch('(') then point() erst space)
+    .combine(id erst ch(')')) { fst, snd -> fst to snd }
+    .combine(space then sw("of") then points(num = 2)) { sector, segment -> sector to segment }
+    .combineT(space then ratio) { input, (sector, linePoints), (numerator, denominator) ->
+        val (start, name) = sector
+
+        val (from, to) = linePoints.map { it.point }
+        val line = Line(from, to)
+
+        val ratio = numerator / (numerator + denominator)
+
+        val section = AngleSector(ratio, start.point, line)
+            .also { it.passive = true }
+
+        val segment = Polygon(listOf(start.point, section))
+            .applyStyle(PolygonStyle)
+            .also { it.passive = true }
+
+        section.applyStyle(LabeledPointPolygonStyle(name, segment))
+
+        val context = input.context.addPoint(name, section)
+        segment to input.copy(context = context)
+    }
+
+private val definition = (defineNested erst eol()) or (defineGlobal erst eol()) or (intersection erst eol()) or (perpendicular erst eol()) or (sector erst eol())
 
 private val comment = char<ParserContext>('#').map { null } erst
         anything<ParserContext>().many() erst eol()

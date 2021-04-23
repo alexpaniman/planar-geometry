@@ -13,7 +13,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class Polygon(val points: List<Point>): PlanarObject<XYPolygon>(), AreaContainer, SurfaceContainer {
+open class Polygon(val points: List<Point>): PlanarObject<XYPolygon>(), AreaContainer, SurfaceContainer {
     private val touches: (XYCircle) -> Boolean = touches@ {
         val segments = points.zip(points.drop(1) + points.first())
 

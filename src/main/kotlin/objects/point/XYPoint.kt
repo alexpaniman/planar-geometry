@@ -1,10 +1,13 @@
 package objects.point
 
-import kotlin.math.pow
-import kotlin.math.sqrt
+import kotlin.math.*
 
 data class XYPoint(var x: Double = 0.0, var y: Double = 0.0) {
-    fun distanceTo(x: Double, y: Double) = sqrt((this.x - x).pow(2) + (this.y - y).pow(2))
+    private fun distanceTo(x: Double, y: Double) = sqrt((this.x - x).pow(2) + (this.y - y).pow(2))
+
+    infix fun angleWith(other: XYPoint): Double = acos((x * other.x + y * other.y) / (len * other.len))
+
+    infix fun rotatedBy(angle: Double) = XYPoint(x * cos(angle) - y * sin(angle), x * sin(angle) + y * cos(angle))
 
     infix fun distanceTo(other: XYPoint) = distanceTo(other.x, other.y)
 
@@ -23,7 +26,7 @@ data class XYPoint(var x: Double = 0.0, var y: Double = 0.0) {
     fun shifted(x: Double, y: Double) =
         copy().also { it.shift(x, y) }
 
-    fun vectorLength() = distanceTo(0.0, 0.0)
+    val len get() = distanceTo(0.0, 0.0)
 
     fun normalize() {
         val length = distanceTo(0.0, 0.0)

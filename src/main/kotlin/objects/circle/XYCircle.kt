@@ -1,7 +1,6 @@
 package objects.circle
 
 import objects.line.XYLine
-import objects.point.Point
 import objects.point.XYPoint
 import kotlin.math.pow
 

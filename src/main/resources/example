@@ -1,9 +1,28 @@
-def triangle (A B C)
-def point (M) on (B C) ratio 1:2
-def circle (omega0) described (A B M)
-def circle (omega1) described (C M A)
-style hide (A B C)
-style hide (M)
+# def triangle (A B C)
+# def point (M) on (B C) ratio 1:2
+# def circle (omega0) described (A B M)
+# def circle (omega1) described (C M A)
+# style hide (A B C)
+# style hide (M)
 # def segment (A B)
-assign (X) (Y) to (omega1) x (omega0)
-def point (X)
+# assign (X) (Y) to (omega1) x (omega0)
+# def point (X)
+
+# def triangle (A B C)
+# def perpendicular (A H0) to (B C)
+# def perpendicular (B H1) to (A C)
+# def perpendicular (C H2) to (A B)
+# style hide labels (H0 H1 H2)
+# assign (M) to (A H0) x (B H1)
+# def circle (omega0) described (H0 H1 H2)
+# def circle (omega1) described (M B C)
+# assign (T) (I) to (omega0) x (omega1)
+# def segment (T I)
+
+# def triangle (A B C)
+# def sector (C M) of (B A) ratio 1:1
+# def sector (B U) of (C A) ratio 1:1
+# def perpendicular (A K) to (B C)
+
+def triangle (A B C)
+def circle (omega) center (A) through (B)
