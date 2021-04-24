@@ -23,3 +23,31 @@
 # def sector (C M) of (B A) ratio 1:1
 # def sector (B U) of (C A) ratio 1:1
 # def perpendicular (A K) to (B C)
+
+def triangle (A B C)
+def sector (A A_0) of (B C) ratio 1:2
+def sector (A A_1) of (B C) ratio 2:1
+def sector (B B_0) of (A C) ratio 1:2
+def sector (B B_1) of (A C) ratio 2:1
+def sector (C C_0) of (A B) ratio 1:2
+def sector (C C_1) of (A B) ratio 2:1
+
+assign (I_0)  (I_1)  (I_2)  (I_3)  (I_4)
+       (I_5)  (I_6)  (I_7)  (I_8)  (I_9)
+       (I_10) (I_11) (I_12) (I_13) (I_14) to (A A_0) x (A A_1) x (B B_0) x
+                                             (B B_1) x (C C_0) x (C C_1)
+
+style hide (I_0) (I_1) (I_2) (I_3) (I_5) (I_7) (I_8) (I_9) (I_11) (I_12) (I_13) (I_14)
+style hide labels (I_4 I_6 I_10)
+style hide (A A_0) (A A_1) (B B_0) (B B_1) (C C_0) (C C_1)
+
+def segment (A I_6)
+def segment (A I_4)
+def segment (B I_6)
+def segment (B I_10)
+def segment (C I_4)
+def segment (C I_10)
+
+def triangle (I_6 I_4 I_10)
+def circle (omega1) described (I_4 I_6 I_10)
+# def polygon (I_5 I_12 I_8 I_2 I_11 I_3)

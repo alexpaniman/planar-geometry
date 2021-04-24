@@ -29,7 +29,7 @@ class LabeledPointLineStyle(private val text: String, private val line: Line): S
 
         val label = XYPointLabel(text, position) // TODO Probably add label style
 
-        tikz.draw(label, "\\node at (${position.x}, ${position.y}) { $text };")
+        tikz.draw(label, "\\node at (${position.x}, ${position.y}) { ${text.mathMode} };")
 
         PointStyle.draw(obj, tikz)
     }

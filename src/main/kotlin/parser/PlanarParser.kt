@@ -257,15 +257,17 @@ private val intersection = (sw("assign") then (pointNew erst space).many(min = 1
             .map { (_, obj) -> obj }
 
         var context = input.context
-        var intersection: Point? = null
+        val intersections: MutableList<Point> = mutableListOf()
         for ((index, name) in names.withIndex()) {
-            intersection = SetOfIntersections(index, separated)
+            val intersection = SetOfIntersections(index, separated)
                 .also { it.passive = true }
                 .also { it.applyStyle(LabeledPointRotatedStyle(name, PI / 3.0)) }
+
             context = context.addPoint(name, intersection)
+            intersections.add(intersection)
         }
 
-        intersection!! to input.copy(context = context)
+        intersections to input.copy(context = context)
     }
 
 private val perpendicular = (sw("def") then sw("perpendicular") then ch('(') then point() erst space)
@@ -281,7 +283,10 @@ private val perpendicular = (sw("def") then sw("perpendicular") then ch('(') the
 
         projected.applyStyle(LabeledPointPolygonStyle(projection, segment))
 
-        val context = input.context.addPoint(projection, projected)
+        var context = input.context
+        context = context.addPoint(projection, projected)
+        context = context.addObj(point.name + " " + projection, segment)
+
         segment to input.copy(context = context)
     }
 
@@ -305,7 +310,10 @@ private val sector = (sw("def") then sw("sector") then ch('(') then point() erst
 
         section.applyStyle(LabeledPointPolygonStyle(name, segment))
 
-        val context = input.context.addPoint(name, section)
+        var context = input.context
+        context = context.addPoint(name, section)
+        context = context.addObj(start.name + " " + name, segment)
+
         segment to input.copy(context = context)
     }
 
@@ -344,18 +352,18 @@ private val tangent = (sw("def") then sw("tangent") then partiallyDefinedSegment
 private val definition =
     (defineNested      erst eol()).listify() or
         (defineGlobal  erst eol()).listify() or
-        (intersection  erst eol()).listify() or
         (perpendicular erst eol()).listify() or
         (sector        erst eol()).listify() or
+        (intersection  erst eol())           or
         (tangent       erst eol())
 
 private val comment = char<ParserContext>('#').map { null } erst
         anything<ParserContext>().many() erst eol()
 
-private val styleHide = spacedWord<ParserContext>("style hide") then planarObject()
-    .map { (_, obj) -> obj.hide(); null }
+private val styleHide = spacedWord<ParserContext>("style hide") then (planarObject() erst space).many(min = 1)
+    .map { objects -> objects.forEach { (_, obj) -> obj.hide() }; null }
 
-private val styleHideLabel = spacedWord<ParserContext>("style hide labels") then points()
+private val styleHideLabel = (spacedWord<ParserContext>("style hide labels") then points())
     .map { points ->
         points.forEach { (_, _, point) ->
             point.hide()

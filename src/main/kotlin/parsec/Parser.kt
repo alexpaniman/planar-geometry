@@ -119,7 +119,7 @@ abstract class Parser<TInput, out TValue> {
         error ?: Success(list, lastRest)
     }
 
-    infix fun separatedBy(separator: Parser<TInput, *>) = this.many() erst separator appendV this
+    infix fun separatedBy(separator: Parser<TInput, *>) = this append (this erst separator).many()
 
     fun optional() = many(0, 1)
 
