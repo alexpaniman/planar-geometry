@@ -184,7 +184,7 @@ private val circleBase = (spacedWord<ParserContext>("circle") then
 
 private fun sw(w: String) = spacedWord<ParserContext>(w)
 private fun ch(c: Char) = char<ParserContext>(c)
-private fun sc(c: Char) = space then ch(c) erst space
+// private fun sc(c: Char) = space then ch(c) erst space
 private val id = identifier<ParserContext>()
 private val space = space<ParserContext>(min = 1)
 
@@ -216,7 +216,6 @@ private val inscribedCircle = (sw("circle") then ch('(') then id erst ch(')') er
         val ctx = input.context.addObj(circle, create)
         create to input.copy(context = ctx)
     }
-
 
 private val circleByTwoPoints = (sw("circle") then ch('(') then id erst ch(')'))
     .combine (space then sw("center" ) then points(num = 1)) { name, point -> name to point }
@@ -310,7 +309,45 @@ private val sector = (sw("def") then sw("sector") then ch('(') then point() erst
         segment to input.copy(context = context)
     }
 
-private val definition = (defineNested erst eol()) or (defineGlobal erst eol()) or (intersection erst eol()) or (perpendicular erst eol()) or (sector erst eol())
+private val partiallyDefinedSegment = (ch('(') then point() erst space)
+    .combine(id erst ch(')')) { defined, name -> defined to name }
+
+private val tangent = (sw("def") then sw("tangent") then partiallyDefinedSegment)
+    .combine((space then partiallyDefinedSegment).optional()) { required, optional -> listOf(required) + optional }
+    .combineT(space then sw("to") then planarObject()
+        .ensure("Circle was expected!") { it.second is Circle }
+        .map { (_, circle) -> circle as Circle }) { input, tangents, circle ->
+        if (tangents.size == 2)
+            check(tangents[0].first.point === tangents[1].first.point) { "Same point was expected!" }
+
+        val point = tangents.first().first.point
+
+        val tangentLines: MutableList<Polygon> = mutableListOf()
+        var context = input.context
+        for ((index, tangent) in tangents.withIndex()) {
+            val tangentPoint = TangentPoint(index, point, circle)
+
+            val segment = Polygon(listOf(point, tangentPoint))
+                .applyStyle(PolygonStyle)
+
+            val direction = Polygon(listOf(circle.center, tangentPoint))
+            tangentPoint.applyStyle(LabeledPointPolygonStyle(tangent.second, direction))
+
+            tangentLines += segment
+            context = context.addPoint(tangent.second, tangentPoint)
+            context = context.addObj(tangents[0].first.name + " " + tangent.second, segment)
+        }
+
+        tangentLines to input.copy(context = context)
+    }
+
+private val definition =
+    (defineNested      erst eol()).listify() or
+        (defineGlobal  erst eol()).listify() or
+        (intersection  erst eol()).listify() or
+        (perpendicular erst eol()).listify() or
+        (sector        erst eol()).listify() or
+        (tangent       erst eol())
 
 private val comment = char<ParserContext>('#').map { null } erst
         anything<ParserContext>().many() erst eol()
@@ -337,6 +374,8 @@ fun parse(input: String, currentMode: Boolean = false): List<PlanarObject<*>> {
 
     return when (val parsed = statements.parse(stringInput)) {
         is Result.Success -> parsed.unwrap()
+            .filterNotNull()
+            .flatten()
             .filterNotNull()
 
         is Result.Error -> {

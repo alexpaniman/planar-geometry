@@ -25,7 +25,5 @@ class AngleSector(private val ratio: Double, val point: Point, val line: Line): 
         return sector.intersect(definedLine)!!
     }
 
-    override fun corePoints(): List<MovablePoint> {
-        TODO("Not yet implemented")
-    }
+    override fun corePoints(): List<MovablePoint> = point.corePoints() + line.corePoints()
 }

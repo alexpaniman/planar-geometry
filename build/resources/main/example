@@ -24,5 +24,7 @@
 # def sector (B U) of (C A) ratio 1:1
 # def perpendicular (A K) to (B C)
 
+
 def triangle (A B C)
-def circle (omega) center (A) through (B)
+def point (M)
+def segment (M A)

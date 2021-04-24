@@ -71,6 +71,8 @@ abstract class Parser<TInput, out TValue> {
             }
         }
 
+    fun listify() = map { if (it != null) listOf(it) else listOf() }
+
     inline fun <TNew> map(crossinline map: (TValue) -> TNew) =
         transform { input, value -> map(value) to input }
 
